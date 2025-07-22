@@ -1,15 +1,20 @@
 from flask import Flask, request, make_response
-import os
 import google.auth
 from googleapiclient.discovery import build
 from google.cloud import bigquery
+from google.cloud import storage
+from google.oauth2 import service_account
+
+from helper import download_json_from_gcs, transform_contracts_to_flat_table, load_to_bigquery
 
 # variables
 
-project_id = os.environ["project_id"]
-print (project_id)
-dataset_id = os.environ["dataset_id"]
-table_id = os.environ["table_id"]
+project_id = 'masterschool-gcp'
+dataset_id = 'analytics_stage'
+table_id = 'operations'
+bucket_id = 'transform_etl_students'
+uri = 'gs://transform_etl_students/operational_data.json'
+file_path = '/'.join(uri.split('/')[3:])
 
 
 # authentification
@@ -28,5 +33,10 @@ credentials = service_account.Credentials.from_service_account_file(
 #     ]
 #     credentials, _ = google.auth.default(scopes=scopes)
 
+#initialization
+bigquery_client = bigquery.Client(credentials=credentials, project=project_id)
+storage_client = storage.Client(credentials=credentials)
 
-client = bigquery.Client(credentials=credentials, project=project_id)
+test = download_json_from_gcs(bucket_id, file_path, storage_client)
+test_transformed =  transform_contracts_to_flat_table(test)
+load_to_bigquery(bigquery, bigquery_client, test_transformed, project_id, dataset_id, table_id)
