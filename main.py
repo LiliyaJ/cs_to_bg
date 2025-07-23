@@ -13,7 +13,7 @@ project_id = 'masterschool-gcp'
 dataset_id = 'analytics_stage'
 table_id = 'operations'
 bucket_id = 'transform_etl_students'
-uri = 'gs://transform_etl_students/operational_data.json'
+uri = 'gs://transform_etl_students/operational_data_clean_12224.json'
 file_path = '/'.join(uri.split('/')[3:])
 
 
